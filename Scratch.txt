@@ -1,0 +1,14 @@
+	switch token {
+			case "(": 
+				var L []string
+				for _, token := range tokens {    
+					if token != ")"{
+						L = append(L, token)
+					} 
+					return L
+				} 
+			case ")":
+				fmt.Println("Unexpected ) ")
+			}
+		var strs []string
+		return append(strs,token)
