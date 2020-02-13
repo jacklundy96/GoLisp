@@ -2,14 +2,15 @@ package main
 
 import (
 	"strings"
-	"strconv"
 	"fmt"
+	"strconv"
+	"errors"
 )
 
 //Struct definitions
 type TokenType int
 
-type token struct {
+type Token struct {
 	value string
 	tokenType TokenType 
 } 
@@ -22,21 +23,47 @@ const (
 	SYMBOL TokenType = 5
 )
 
-
-
 func main() {
-	fmt.Print(tokenize("(+ (+ 6 7.5) 5)"))
+	val, err := parse(tokenize("(+ (+ 6 7) (- 8 9) )"))
+	if err == nil {
+		fmt.Println(val)
+	}	
 }
 
 //Parse token stream into token AST
-func parse(tokens []token) string {
-	return ""
+func parse(tokens []interface{}) ([]interface{}, error) { 	 
+	var L []interface{} 
+	token := tokens[0].(Token)
+	tokens = tokens[1:]
+
+	if len(tokens) == 0 {
+		return nil, errors.New("Syntax Error: Unexpected EOF)")
+	}	
+
+	switch token.tokenType {
+		case LPAREN:
+			var C []interface{} 
+			offset := 0
+			for tokens[0].(Token).tokenType != RPAREN {
+				recur, err :=  parse(tokens)  
+				if err == nil {
+					C = append(C, recur)
+				}		
+				tokens = tokens[1:]		
+			}	
+			return C, nil
+		case RPAREN:
+			return nil, errors.New("Syntax Error: Unexpected )")
+		default:
+			L = append(L, token)
+			return L, nil
+	}
 }
 
 //Convert input string into tokens
-func tokenize(program string) []token {
-	var out []token
-	var t token 
+func tokenize(program string) []interface{} {
+	var out []Token
+	var t Token 
 	
 	program = strings.Replace(program, "(", "( ", -1)
 	program = strings.Replace(program, ")", " )", -1)
@@ -66,7 +93,12 @@ func tokenize(program string) []token {
 					t.value = rawToken
 					out = append(out, t)
 				}				
-		}
+			}
+	}	
+	//Convert token slice ([]Tokne) to []interface 
+	slice := make([]interface{}, len(out))
+	for i, v := range out {
+		slice[i] = v
 	}
-	return out
+	return slice
 }
