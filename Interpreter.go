@@ -16,8 +16,26 @@ type Token struct {
 	value string
 	tokenType TokenType 
 }
-
 type expr interface{}
+
+type Env map[symbol]interface{}
+
+//If a value doesn't exist in the environment then insert it
+func(e Env) update(sym symbol, expr interface{}) {
+	if _, ok := e[sym]; ok {
+		e[sym] = expr
+	}
+}
+
+//Environment factory/constructor
+func NewEnv() Env {
+	Env := make(map[symbol]interface{})
+	//Setyp global environment
+	Env[symbol("null?")] = func(x interface{}) bool { return x == nil }
+
+	return Env
+}
+
 
 //Constant definitions
 const (
@@ -108,7 +126,7 @@ func tokenize(program string) []Token {
 					t.tokenType = SYMBOL
 					t.value = rawToken
 					out = append(out, t)
-				}				
+				}			
 			}
 	}	
 	//Convert token slice ([]Token) to []interface 
