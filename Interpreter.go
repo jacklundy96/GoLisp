@@ -9,11 +9,16 @@ import (
 
 //Struct definitions
 type TokenType int
+type symbol string  
+type number float64
 
 type Token struct {
 	value string
 	tokenType TokenType 
-} 
+}
+
+type expr interface{}
+
 //Constant definitions
 const (
 	LPAREN TokenType = 1
@@ -24,48 +29,60 @@ const (
 )
 
 func main() {
-	val, err := parse(tokenize("(+ (+ 6 7) (- 8 9) )"))
-	if err == nil {
+	val,err := readTokens(tokenize("(defun area-circle(rad)(terpri)(format t rad)(format t  (* 3.141592 rad rad)))"))
+	if err != nil {
 		fmt.Println(val)
-	}	
-}
-
-//Parse token stream into token AST
-func parse(tokens []interface{}) ([]interface{}, error) { 	 
-	var L []interface{} 
-	token := tokens[0].(Token)
-	tokens = tokens[1:]
-
-	if len(tokens) == 0 {
-		return nil, errors.New("Syntax Error: Unexpected EOF)")
-	}	
-
-	switch token.tokenType {
-		case LPAREN:
-			var C []interface{} 
-			offset := 0
-			for tokens[0].(Token).tokenType != RPAREN {
-				recur, err :=  parse(tokens)  
-				if err == nil {
-					C = append(C, recur)
-				}		
-				tokens = tokens[1:]		
-			}	
-			return C, nil
-		case RPAREN:
-			return nil, errors.New("Syntax Error: Unexpected )")
-		default:
-			L = append(L, token)
-			return L, nil
 	}
 }
 
+//Parse token stream into token AST
+func readTokens(tokens []Token) (expr, error) {	
+
+	if len(tokens) == 0 {
+		return nil, errors.New("Unexpected EOF")
+	}
+
+	token := tokens[0]
+	if token.tokenType == LPAREN {
+		val := parse(&tokens)
+		return val, nil
+	} else if token.tokenType == RPAREN {
+		return nil, errors.New("Invalid Syntax Expected: ( ")
+	}else {
+		return nil,nil
+	} 
+}
+
+func parse(tokens *[]Token) expr {	
+	 //pop first element from tokens
+	 token := (*tokens)[0]
+	 *tokens = (*tokens)[1:]
+
+	 switch token.tokenType {
+		case LPAREN: 
+			L := make([]expr, 0)
+			for (*tokens)[0].tokenType != RPAREN {
+				i := parse(tokens)
+				L = append(L, i)
+				fmt.Println(L)
+			}
+			*tokens = (*tokens)[1:]
+			return L
+		default:
+			if f, err := strconv.ParseFloat(token.value, 64); err == nil {
+				return number(f)
+			} else {
+				return symbol(token.value)
+			}
+	 }
+}
+
 //Convert input string into tokens
-func tokenize(program string) []interface{} {
+func tokenize(program string) []Token {
 	var out []Token
 	var t Token 
 	
-	program = strings.Replace(program, "(", "( ", -1)
+	program = strings.Replace(program, "(", " ( ", -1)
 	program = strings.Replace(program, ")", " )", -1)
 	rawTokens := strings.Fields(program)  
 
@@ -80,7 +97,7 @@ func tokenize(program string) []interface{} {
 				t.value = rawToken
 				out = append(out, t)	
 			default: 
-				if _, err := strconv.ParseInt(rawToken,10,64); err == nil {
+				if _, err := strconv.ParseInt(rawToken,10,64); err == nil{
 					t.tokenType = NUMBER
 					t.value = rawToken
 					out = append(out, t)
@@ -95,8 +112,8 @@ func tokenize(program string) []interface{} {
 				}				
 			}
 	}	
-	//Convert token slice ([]Tokne) to []interface 
-	slice := make([]interface{}, len(out))
+	//Convert token slice ([]Token) to []interface 
+	slice := make([]Token, len(out))
 	for i, v := range out {
 		slice[i] = v
 	}

@@ -1,0 +1,20 @@
+Test: 1
+(defun area-circle(rad)(terpri)(format t rad)(format t  (* 3.141592 rad rad)))
+[
+    [{( 1} {defun 5} {area-circle 5} {( 1} {rad 5} {) 2} {( 1} {terpri 5} {) 2} {( 1} {format 5} {t 5} {rad 5} {) 2} {( 1} {format 5} {t 5} {( 1} {* 5} {3.141592 3} {rad 5} {rad 5} {) 2} {) 2}]
+              [(rad) (terpri) ( format t rad ) ( format t (* 3.141592 rad rad ) )]
+                    [(terpri) ( format t rad ) ( format t (* 3.141592 rad rad ) )]
+                             [( format t rad ) ( format t (* 3.141592 rad rad ) )]
+                                              [( format t (* 3.141592 rad rad ) )]
+                                                         [(* 3.141592 rad rad ) )]
+]
+
+
+
+
+[
+    [{( 1} {+ 5} {( 1} {- 5} {7 3} {8 3} {) 2} {3 3}] 
+[{( 1} {- 5} {7 3} {8 3} {) 2} {3 3}]
+
+
+]
