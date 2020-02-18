@@ -37,7 +37,6 @@ func main() {
 
 //Parse token stream into token AST
 func readTokens(tokens []Token) (expr, error) {	
-
 	if len(tokens) == 0 {
 		return nil, errors.New("Unexpected EOF")
 	}
@@ -49,10 +48,11 @@ func readTokens(tokens []Token) (expr, error) {
 	} else if token.tokenType == RPAREN {
 		return nil, errors.New("Invalid Syntax Expected: ( ")
 	}else {
-		return nil,nil
+		return nil, errors.New("Unknown Error Occoured")
 	} 
 }
 
+//parse tokens in expression tree
 func parse(tokens *[]Token) expr {	
 	 //pop first element from tokens
 	 token := (*tokens)[0]
@@ -64,7 +64,6 @@ func parse(tokens *[]Token) expr {
 			for (*tokens)[0].tokenType != RPAREN {
 				i := parse(tokens)
 				L = append(L, i)
-				fmt.Println(L)
 			}
 			*tokens = (*tokens)[1:]
 			return L
